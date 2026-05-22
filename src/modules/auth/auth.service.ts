@@ -1,6 +1,6 @@
 import { sql } from "../../db";
-import type { RUser } from "../../types";
 import bcrypt from "bcrypt";
+import type { RUser, User } from "../../types";
 class AuthService {
   private async hashPassword(password: string) {
     const hash = await bcrypt.hash(password, 10);
@@ -24,6 +24,31 @@ class AuthService {
     `;
 
     return res[0];
+  }
+
+  async login(email: string, password: string) {
+    const res = await sql`
+    SELECT * FROM users
+    WHERE email = ${email}
+    `;
+
+    if (!res.length) {
+      return null;
+    }
+
+    const { password: hashPassword, ...user } = res[0] as User;
+
+    const isMatch = await this.comparePassword(password, hashPassword);
+
+    return isMatch ? user : null;
+  }
+
+  async getUserById(id: number) {
+    const res = await sql`
+    SELECT name, email,role, id  FROM users
+    WHERE id = ${id}
+    `;
+    return res[0] as RUser & { id: number };
   }
 }
 

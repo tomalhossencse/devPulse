@@ -19,5 +19,5 @@ export const verifyToken = (token: string, type: "access" | "refresh") => {
     type === "access" ? config.access_secret : config.refresh_secret;
 
   const decode = jwt.verify(token, secret);
-  return decode;
+  return decode as RUser & { id: number };
 };
