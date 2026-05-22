@@ -4,7 +4,6 @@ import type { RIssue } from "../../types";
 import { sendResponse } from "../../middlewares/sendResponse";
 
 export const createIssue = async (req: Request, res: Response) => {
-  console.log(req.user);
   const { title, description, type } = req.body as Omit<
     RIssue,
     "status" | "reporter_id"
@@ -31,5 +30,17 @@ export const createIssue = async (req: Request, res: Response) => {
     res,
     { message: "Issue created successfully", data: issue },
     201,
+  );
+};
+
+export const getIssue = async (req: Request, res: Response) => {
+  const issueData = await issueService.getIssue();
+  if (!issueData) {
+    return sendResponse(res, { message: "Issues not Found", error: true }, 400);
+  }
+  return sendResponse(
+    res,
+    { message: "Issues Retrived Succefully", data: issueData },
+    200,
   );
 };
