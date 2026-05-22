@@ -2,9 +2,9 @@ import type { NextFunction, Request, Response } from "express";
 import config from "../config";
 
 export const globalError = async (
+  err: unknown,
   req: Request,
   res: Response,
-  err: unknown,
   next: NextFunction,
 ) => {
   res.status(500).json({
