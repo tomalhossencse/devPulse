@@ -3,10 +3,20 @@ import express, {
   type Request,
   type Response,
 } from "express";
+import { sendResponse } from "./middlewares/sendResponse";
 
 const app: Application = express();
+
+app.use(express.json());
+
 app.get("/", async (req: Request, res: Response) => {
-  res.send("I am a Root of this server");
+  sendResponse(
+    res,
+    {
+      message: "Hello World",
+    },
+    200,
+  );
 });
 
 export default app;
