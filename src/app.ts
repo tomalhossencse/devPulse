@@ -3,6 +3,8 @@ import express, {
   type Request,
   type Response,
 } from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 import { sendResponse } from "./middlewares/sendResponse";
 import authRoutes from "./modules/auth/auth.route";
 import issueRoutes from "./modules/issue/issue.route";
@@ -11,6 +13,12 @@ import { globalError } from "./middlewares/glebalErrorHandler";
 const app: Application = express();
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://devpulsebd.vercel.app"],
+  }),
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/issues", issueRoutes);

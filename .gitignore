@@ -10,3 +10,4 @@ build/
 .env.local
 .env.development
 .env.production
+.vercel
