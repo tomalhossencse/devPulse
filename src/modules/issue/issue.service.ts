@@ -16,6 +16,43 @@ class IssueService {
     return res[0];
   }
 
+  private async attachReporter(issues: any[]) {
+    // 2.extract repoter id
+
+    const reporterIds = issues.map((issue) => issue.reporter_id);
+
+    // 3. remove dupcate
+
+    const uniqueReporterIds = [...new Set(reporterIds)];
+
+    // 4. feach all user
+
+    const reporters = await sql`
+        SELECT id, name, role
+        FROM users
+        WHERE id = ANY(${uniqueReporterIds})
+         `;
+
+    // 5. lookup table for users
+
+    const reporterMap = new Map(reporters.map((user) => [user.id, user]));
+
+    // 6. attach reporter data to issues with formating
+
+    const issuesData = issues.map((issue) => {
+      const { reporter_id, created_at, updated_at, ...rest } = issue;
+
+      return {
+        ...rest,
+        reporter: reporterMap.get(issue.reporter_id),
+        created_at,
+        updated_at,
+      };
+    });
+
+    return issuesData;
+  }
+
   async getIssue(filters: { sort?: Sort; type?: Type; status?: Status }) {
     const { sort = "newest", type, status } = filters;
 
@@ -62,40 +99,21 @@ class IssueService {
 
     const issues = await sql.query(query, values);
 
-    // 2.extract repoter id
+    // 2. attach reporter and formating
 
-    const reporterIds = issues.map((issue) => issue.reporter_id);
-
-    // 3. remove dupcate
-
-    const uniqueReporterIds = [...new Set(reporterIds)];
-
-    // 4. feach all user
-
-    const reporters = await sql`
-        SELECT id, name, role
-        FROM users
-        WHERE id = ANY(${uniqueReporterIds})
-         `;
-
-    // 5. lookup table for users
-
-    const reporterMap = new Map(reporters.map((user) => [user.id, user]));
-
-    // 6. attach reporter data to issues with formating
-
-    const issuesData = issues.map((issue) => {
-      const { reporter_id, created_at, updated_at, ...rest } = issue;
-
-      return {
-        ...rest,
-        reporter: reporterMap.get(issue.reporter_id),
-        created_at,
-        updated_at,
-      };
-    });
+    const issuesData = await this.attachReporter(issues);
 
     return issuesData;
+  }
+
+  async getIssueById(id: number) {
+    const issue = await sql`
+    SELECT * FROM issues
+    WHERE id = ${id}
+    `;
+
+    const issueData = await this.attachReporter(issue);
+    return issueData;
   }
 }
 

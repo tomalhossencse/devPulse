@@ -1,8 +1,7 @@
-import type { Request, Response } from "express";
+import { type Request, type Response } from "express";
 import issueService from "./issue.service";
 import type { RIssue, Sort, Status, Type } from "../../types";
 import { sendResponse } from "../../middlewares/sendResponse";
-import { stat } from "fs";
 
 export const createIssue = async (req: Request, res: Response) => {
   const { title, description, type } = req.body as Omit<
@@ -50,6 +49,22 @@ export const getIssue = async (req: Request, res: Response) => {
   return sendResponse(
     res,
     { message: "Issues Retrived Succefully", data: issues },
+    200,
+  );
+};
+
+export const getIssueById = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const issue = await issueService.getIssueById(Number(id));
+
+  if (!issue) {
+    return sendResponse(res, { message: "Issue not Found", error: true }, 400);
+  }
+
+  return sendResponse(
+    res,
+    { message: "Issue Retrived Succefully", data: issue },
     200,
   );
 };
