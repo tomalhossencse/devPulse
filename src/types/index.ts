@@ -1,6 +1,10 @@
 export const ROLES = ["contributor", "maintainer"] as const;
 export type Role = (typeof ROLES)[number];
 
+export type Sort = "newest" | "oldest";
+export type Type = "bug" | "feature_request";
+export type Status = "open" | "in_progress" | "resolved";
+
 export type User = {
   id: number;
   name: string;
@@ -15,8 +19,8 @@ export type Issue = {
   id: number;
   title: string;
   description: string;
-  type: "bug" | "feature_request";
-  status: "open" | "in_progress" | "resolved";
+  type: Type;
+  status: Status;
   reporter_id: number;
   created_at: Date;
   updated_at: Date;

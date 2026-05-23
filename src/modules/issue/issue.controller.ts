@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import issueService from "./issue.service";
-import type { RIssue } from "../../types";
+import type { RIssue, Sort, Status, Type } from "../../types";
 import { sendResponse } from "../../middlewares/sendResponse";
+import { stat } from "fs";
 
 export const createIssue = async (req: Request, res: Response) => {
   const { title, description, type } = req.body as Omit<
@@ -34,13 +35,21 @@ export const createIssue = async (req: Request, res: Response) => {
 };
 
 export const getIssue = async (req: Request, res: Response) => {
-  const issueData = await issueService.getIssue();
-  if (!issueData) {
+  const filters = {
+    sort: req.query.sort as Sort,
+    type: req.query.type as Type,
+    status: req.query.status as Status,
+  };
+
+  const issues = await issueService.getIssue(filters);
+
+  if (!issues) {
     return sendResponse(res, { message: "Issues not Found", error: true }, 400);
   }
+
   return sendResponse(
     res,
-    { message: "Issues Retrived Succefully", data: issueData },
+    { message: "Issues Retrived Succefully", data: issues },
     200,
   );
 };

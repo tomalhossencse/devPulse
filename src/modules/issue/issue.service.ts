@@ -1,5 +1,5 @@
 import { sql } from "../../db";
-import type { RIssue } from "../../types";
+import type { RIssue, Sort, Status, Type } from "../../types";
 
 class IssueService {
   async createIssue(
@@ -16,11 +16,51 @@ class IssueService {
     return res[0];
   }
 
-  async getIssue() {
-    // 1. get all issues
-    const issues = await sql`
+  async getIssue(filters: { sort?: Sort; type?: Type; status?: Status }) {
+    const { sort = "newest", type, status } = filters;
+
+    let query = `
     SELECT * FROM issues
+    WHERE 1 = 1
     `;
+
+    const values: any[] = [];
+
+    // filter by type
+
+    if (type) {
+      values.push(type);
+
+      query += `
+    AND type = $${values.length}
+    `;
+    }
+
+    // filter by status
+
+    if (status) {
+      values.push(status);
+
+      query += `
+    AND status = $${values.length}
+    `;
+    }
+
+    // by sorting
+
+    if (sort === "oldest") {
+      query += `
+     ORDER BY created_at ASC
+     `;
+    } else {
+      query += `
+     ORDER BY created_at DESC
+     `;
+    }
+
+    // 1. get all issues by filltering
+
+    const issues = await sql.query(query, values);
 
     // 2.extract repoter id
 
@@ -42,14 +82,18 @@ class IssueService {
 
     const reporterMap = new Map(reporters.map((user) => [user.id, user]));
 
-    console.log(reporterMap.get(8));
+    // 6. attach reporter data to issues with formating
 
-    // 6. attach reporter data to issues
+    const issuesData = issues.map((issue) => {
+      const { reporter_id, created_at, updated_at, ...rest } = issue;
 
-    const issuesData = issues.map((issue) => ({
-      ...issue,
-      reporter: reporterMap.get(issue.reporter_id),
-    }));
+      return {
+        ...rest,
+        reporter: reporterMap.get(issue.reporter_id),
+        created_at,
+        updated_at,
+      };
+    });
 
     return issuesData;
   }
