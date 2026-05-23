@@ -43,7 +43,7 @@ export const getIssue = async (req: Request, res: Response) => {
   const issues = await issueService.getIssue(filters);
 
   if (!issues) {
-    return sendResponse(res, { message: "Issues not Found", error: true }, 400);
+    return sendResponse(res, { message: "Issues not Found", error: true }, 404);
   }
 
   return sendResponse(
@@ -58,13 +58,13 @@ export const getIssueById = async (req: Request, res: Response) => {
 
   const issue = await issueService.getIssueById(Number(id));
 
-  if (!issue) {
-    return sendResponse(res, { message: "Issue not Found", error: true }, 400);
+  if (!issue.length) {
+    return sendResponse(res, { message: "Issue not Found", error: true }, 404);
   }
 
-  return sendResponse(
+  sendResponse(
     res,
-    { message: "Issue Retrived Succefully", data: issue },
+    { message: "Issue Retrived Succefully", data: issue[0] },
     200,
   );
 };
