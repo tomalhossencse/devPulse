@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createIssue,
+  deleteIssue,
   getIssue,
   getIssueById,
   updateIssue,
@@ -18,5 +19,6 @@ router.patch(
   authorizeByRole("maintainer", "contributor"),
   updateIssue,
 );
+router.delete("/:id", auth, authorizeByRole("maintainer"), deleteIssue);
 
 export default router;

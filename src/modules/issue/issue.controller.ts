@@ -113,3 +113,13 @@ export const updateIssue = async (req: Request, res: Response) => {
     200,
   );
 };
+
+export const deleteIssue = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const deleteIssue = await issueService.deleteIssue(Number(id));
+  if (!deleteIssue) {
+    return sendResponse(res, { message: "Issues not Found", error: true }, 404);
+  }
+
+  sendResponse(res, { message: "Issue deleted successfully" }, 200);
+};
