@@ -56,7 +56,7 @@ export const getIssue = async (req: Request, res: Response) => {
 export const getIssueById = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const issue = await issueService.getIssueById(Number(id));
+  const issue = await issueService.getIssueByIdRes(Number(id));
 
   if (!issue.length) {
     return sendResponse(res, { message: "Issue not Found", error: true }, 404);
@@ -65,6 +65,51 @@ export const getIssueById = async (req: Request, res: Response) => {
   sendResponse(
     res,
     { message: "Issue Retrived Succefully", data: issue[0] },
+    200,
+  );
+};
+
+export const updateIssue = async (req: Request, res: Response) => {
+  const user = req.user;
+
+  const id = req.params.id;
+
+  const { title, description, type } = req.body as Omit<
+    RIssue,
+    "status" | "reporter_id"
+  >;
+
+  const issue = await issueService.getIssueById(Number(id));
+  // console.log(issue);
+
+  if (user.role !== "maintainer") {
+    if (issue.reporter_id !== user.id || issue.status !== "open") {
+      return sendResponse(
+        res,
+        {
+          message: "unauthorized access",
+          error: true,
+        },
+        401,
+      );
+    }
+  }
+
+  const updated = await issueService.updateIssue(Number(id), {
+    title,
+    description,
+    type,
+  });
+
+  // console.log({ updated });
+
+  if (!updated) {
+    return sendResponse(res, { message: "Issues not Found", error: true }, 404);
+  }
+
+  sendResponse(
+    res,
+    { message: "Issue updated Succefully", data: updated },
     200,
   );
 };

@@ -1,21 +1,7 @@
 import { sql } from "../../db";
-import type { RIssue, Sort, Status, Type } from "../../types";
+import type { Issue, RIssue, Sort, Status, Type } from "../../types";
 
 class IssueService {
-  async createIssue(
-    payload: Omit<RIssue, "status" | "reporter_id">,
-    reporter_id: number,
-  ) {
-    const { title, description, type } = payload;
-
-    const res = await sql`
-    INSERT INTO issues(title, description, type, reporter_id )
-    VALUES(${title}, ${description}, ${type}, ${reporter_id})
-    RETURNING *
-    `;
-    return res[0];
-  }
-
   private async attachReporter(issues: any[]) {
     // 2.extract repoter id
 
@@ -51,6 +37,20 @@ class IssueService {
     });
 
     return issuesData;
+  }
+
+  async createIssue(
+    payload: Omit<RIssue, "status" | "reporter_id">,
+    reporter_id: number,
+  ) {
+    const { title, description, type } = payload;
+
+    const res = await sql`
+    INSERT INTO issues(title, description, type, reporter_id )
+    VALUES(${title}, ${description}, ${type}, ${reporter_id})
+    RETURNING *
+    `;
+    return res[0];
   }
 
   async getIssue(filters: { sort?: Sort; type?: Type; status?: Status }) {
@@ -106,7 +106,7 @@ class IssueService {
     return issuesData;
   }
 
-  async getIssueById(id: number) {
+  async getIssueByIdRes(id: number) {
     const issue = await sql`
     SELECT * FROM issues
     WHERE id = ${id}
@@ -114,6 +114,35 @@ class IssueService {
 
     const issueData = await this.attachReporter(issue);
     return issueData;
+  }
+  async getIssueById(id: number) {
+    const issue = await sql`
+    SELECT * FROM issues
+    WHERE id = ${id}
+    `;
+    return issue[0] as Issue;
+  }
+
+  async updateIssue(
+    id: number,
+    update: Omit<RIssue, "status" | "reporter_id">,
+  ) {
+    const { title, description, type } = update;
+
+    const updates = await sql`
+    UPDATE issues
+    SET
+
+    title = COALESCE(${title}, title),
+    description = COALESCE(${description},description),
+    type = COALESCE(${type}, type),
+    updated_at = COALESCE(NOW(), updated_at)
+
+    WHERE id = ${id}
+    RETURNING *
+    `;
+
+    return updates[0];
   }
 }
 

@@ -20,7 +20,7 @@ class AuthService {
     const res = await sql`
     INSERT INTO users(name, email, password, role)
     VALUES(${name}, ${email},${hashPassword}, COALESCE(${role}, 'contributor'))
-    RETURNING *
+    RETURNING id, name, email, role, created_at, updated_at
     `;
 
     return res[0];

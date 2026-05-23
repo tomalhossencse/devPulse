@@ -5,6 +5,7 @@ import { signToken } from "../../utils/jwt";
 
 export const createAccount = async (req: Request, res: Response) => {
   const newUser = await authService.createAccount(req.body);
+
   if (!newUser) {
     return sendResponse(
       res,
